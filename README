@@ -39,7 +39,7 @@ the tags object:
 
 "googleit": {
     openTag: function(params,content) {
-        var website = "\"http://www.google.com/#q=" + content + '"';
+        var website = "\"http://www.google.com/#q= " + content + '"';
         return '<a href=' + website + '>';
     },
     closeTag: function(params,content) {
@@ -48,7 +48,7 @@ the tags object:
 }
 
 Then you could have BBCode like this: "[googleit]ta-da![/googleit]" which would be 
-transformed into this: "<a href="http://www.google.com/#q=ta-da!">ta-da!</a>"
+transformed into this: "<a href=" http://www.google.com/#q=ta-da! ">ta-da!</a>"
 
 New tags have have properties/methods in addition to openTag and closeTag. See xbbcode.js 
 for more details.

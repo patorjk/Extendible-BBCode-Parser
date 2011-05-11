@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2011 Patrick Gillespie, http://patorjk.com/
+Copyright (C) 2011 Patrick Gillespie (patorjk@gmail.com), http://patorjk.com/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,6 @@ THE SOFTWARE.
     Website: http://patorjk.com/
 
     This module allows you to parse BBCode and to add in your own tags to it.
-
-    To use the use the parser, you’d simply include xbbcode.js and xbbcode.css  
-    somewhere on your page, and then call the XBBCODE object from somewhere in your 
-    JavaScript. Example:
-    
-    var result = XBBCODE.process({
-        text: "Some bbcode to process here",
-        removeMisalignedTags: false,
-        addInLineBreaks: false
-    });
-    console.log("Errors: " + result.error);
-    console.dir(result.errorQueue);
-    console.log(result.html);// the HTML form of your BBCode
-
-    To add a new tag to your BBCode, add properties to the “tags” object inside of the XBBCODE object (see below).
-
 */
 
 var XBBCODE = (function() {
