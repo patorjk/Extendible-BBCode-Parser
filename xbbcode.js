@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2011 Patrick Gillespie (patorjk@gmail.com), http://patorjk.com/
+Copyright (C) 2011 Patrick Gillespie, http://patorjk.com/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,11 @@ THE SOFTWARE.
     By Patrick Gillespie (patorjk@gmail.com)
     Website: http://patorjk.com/
 
-    This module allows you to parse BBCode and to add in your own tags to it.
+    This module allows you to parse BBCode and to extend to the mark-up language
+    to add in your own tags.
 */
+
+"use strict";
 
 var XBBCODE = (function() {
 
@@ -34,14 +37,16 @@ var XBBCODE = (function() {
     // Set up private variables
     // -----------------------------------------------------------------------------
 
-    var me = this,
+    var me = {},
         urlPattern = /^(?:https?|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:@#%&()~_?\+=\/\\\.]*$/,
         colorNamePattern = /^(?:red|green|blue|orange|yellow|black|white|brown|gray|silver|purple|maroon|fushsia|lime|olive|navy|teal|aqua)$/,
         colorCodePattern = /^#?[a-fA-F0-9]{6}$/,
         tags,
         tagList,
+        tagsNoParseList = [],
         bbRegExp,
         pbbRegExp,
+        pbbRegExp2,
         openTags,
         closeTags;
         
@@ -113,7 +118,8 @@ var XBBCODE = (function() {
             },
             closeTag: function(params,content) {
                 return '</span>';
-            }
+            },
+            noParse: true
         },
         "color": {
             openTag: function(params,content) {
@@ -177,6 +183,15 @@ var XBBCODE = (function() {
             },
             closeTag: function(params,content) {
                 return '';
+            },
+            noParse: true
+        },
+        "php": {
+            openTag: function(params,content) {
+                return '<span class="xbbcode-code">';
+            },
+            closeTag: function(params,content) {
+                return '</span>';
             },
             noParse: true
         },
@@ -290,7 +305,7 @@ var XBBCODE = (function() {
             
                 var myUrl;
             
-                if (params === "") {
+                if (!params) {
                     myUrl = content.replace(/<.*?>/g,"");
                 } else {
                     myUrl = params.substr(1);
@@ -335,6 +350,9 @@ var XBBCODE = (function() {
                     tagList.push("\\" + prop);
                 } else {
                     tagList.push(prop);
+                    if ( tags[prop].noParse ) {
+                        tagsNoParseList.push(prop);
+                    }
                 }
                 
                 tags[prop].validChildLookup = {};
@@ -356,7 +374,8 @@ var XBBCODE = (function() {
     
     bbRegExp = new RegExp("<bbcl=([0-9]+) (" + tagList.join("|") + ")([ =][^>]*?)?>((?:.|[\\r\\n])*?)<bbcl=\\1 /\\2>", "gi"); 
     pbbRegExp = new RegExp("\\[(" + tagList.join("|") + ")([ =][^\\]]*?)?\\]([^\\[]*?)\\[/\\1\\]", "gi"); 
-    
+    pbbRegExp2 = new RegExp("\\[(" + tagsNoParseList.join("|") + ")([ =][^\\]]*?)?\\]([\\s\\S]*?)\\[/\\1\\]", "gi");    
+
     // create the regex for escaping ['s that aren't apart of tags
     (function() {
         var closeTagList = [];
@@ -397,7 +416,7 @@ var XBBCODE = (function() {
         
         for (ii = 0; ii < matchingTags.length; ii++) {
             reTagNamesParts.lastIndex = 0;
-            childTag = (matchingTags[ii].match(reTagNamesParts))[2];
+            childTag = (matchingTags[ii].match(reTagNamesParts))[2].toLowerCase();
             
             if ( pInfo.restrictChildrenTo.length > 0 ) {
                 if ( !pInfo.validChildLookup[childTag] ) {
@@ -450,6 +469,8 @@ var XBBCODE = (function() {
     
     var replaceFunct = function(matchStr, bbcodeLevel, tagName, tagParams, tagContents) {
     
+        tagName = tagName.toLowerCase();
+
         var processedContent = tags[tagName].noParse ? unprocess(tagContents) : tagContents.replace(bbRegExp, replaceFunct),
             openTag = tags[tagName].openTag(tagParams,processedContent),
             closeTag = tags[tagName].closeTag(tagParams,processedContent);
@@ -532,13 +553,23 @@ var XBBCODE = (function() {
         config.text = config.text.replace(/\]/g, "&#93;"); // escape ['s that aren't apart of tags
         config.text = config.text.replace(/</g, "["); // escape ['s that aren't apart of tags
         config.text = config.text.replace(/>/g, "]"); // escape ['s that aren't apart of tags
-        
+
+        // process tags that don't have their content parsed
+        while ( config.text !== (config.text = config.text.replace(pbbRegExp2, function(matchStr, tagName, tagParams, tagContents) {
+            tagContents = tagContents.replace(/\[/g, "&#91;");
+            tagContents = tagContents.replace(/\]/g, "&#93;");
+            tagParams = tagParams || "";
+            tagContents = tagContents || "";
+            return "[" + tagName + tagParams + "]" + tagContents + "[/" + tagName + "]";
+        })) );
+
         config.text = fixStarTag(config.text); // add in closing tags for the [*] tag
         config.text = addBbcodeLevels(config.text); // add in level metadata
-        
+
         errQueue = checkParentChildRestrictions("bbcode", config.text, -1, "", "", config.text);
+        
         ret.html = parse(config);
-    
+
         if ( ret.html.indexOf("[") !== -1 || ret.html.indexOf("]") !== -1) {
             errQueue.push("Some tags appear to be misaligned.");
         }

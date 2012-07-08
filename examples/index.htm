@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+
+    <title>BBCODE Parser</title>
+    
+    <link rel="stylesheet" type="text/css" href="layout.css" />
+    <link rel="stylesheet" type="text/css" href="../xbbcode.css" />
+</head>
+<body>
+    <div id="container">
+        <div id="heading">Extendible BBCode Previewer (JavaScript)</div>
+        <p></p>
+        <div class="clearFloats"></div>
+    
+        <div id="controlsContainer">
+            <div id="col1">
+                Input Text:
+                <p/>
+                <textarea id="inputCode"></textarea>
+                <p></p>
+                <input type="checkbox" id="cbRmMisTags"/> Remove misaligned tags<br/>
+                <input type="checkbox" id="cbAddLb" /> Added line break tags where line breaks exist<p/>
+                Test Cases: <select id="testCaseList">
+                    <option value="">-- Select a Test Case --</option>
+                    <option value="Color Faded Text">Color Faded Text</option>
+                    <option value="Nested Color Tags">Nested Color Tags</option>
+                    <option value="Nested List Tags">Nested List Tags</option>
+                    <option value="Nested Table Tags">Nested Table Tags</option>
+                    <option value="No Parse Tag">No Parse Tag</option>
+                    <option value="Misaligned Tags 1">Error Case: Misaligned Tags #1 (Produces Error)</option>
+                    <option value="Misaligned Tags 2">Error Case: Misaligned Tags #2 (Produces Error)</option>
+                    <option value="Mismatched Parent-Child Tags">Error Case: Mismatched Parent-Child Tags (Produces Error)</option>
+                </select>
+                <p></p>
+                <button id="btnTest">Test</button>
+                <span id="errMsg" class="errMsg-fine">Errors: False</span>
+                <p/>
+                <div id="errMsgs"></div>
+                <p></p>
+
+            </div>
+            <div id="col2">
+                Formatting:
+                <p/>
+                <div id="formatDisplay">
+                <ul>
+                <li>[b]bold text[/b]</li>
+                <li>[code]monospaced text[/code]</li>
+                <li>[color=red]red text[/color]<br/>
+                    [color=#ff0000]red text[/color]</li>
+                <li>[i]italicized text[/i]</li>
+                <li>[list][*]1[*]2[/list]</li>
+                <li>[img]image url[/img]</li>
+                <li>[noparse][b]bbcode[/b][/noparse]</li>
+                <li>[quote]quoted text[/quote]</li>
+                <li>[s]strikethrough text[/s]</li>
+                <li>[size=30]sized text[/size]</li>
+                <li>[table][tr][td]cell[/td][/tr][/table]</li>
+                <li>[u]underlined text[/u]</li>
+                <li>[url]http://example.com/[/url]<br/>
+                    [url=http://example.com/]text[/url]</li>
+                </ul>
+                
+                </div>
+                
+            </div>
+            <div class="clearFloats"></div>
+        </div>
+        
+        Output:
+        <p/>
+        <div id="outputContainer">
+            <div id="output"></div>
+        </div>
+        
+        <p/>
+        <div style="text-align:center;"><a href="http://patorjk.com/">patorjk.com</a></div>
+            
+    </div>
+    
+    <script type="text/javascript" src="../xbbcode.js"></script>
+    <script type="text/javascript" src="page-setup.js"></script>
+</body>
+</html>
