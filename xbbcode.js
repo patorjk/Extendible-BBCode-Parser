@@ -143,6 +143,22 @@ var XBBCODE = (function() {
                 return '</span>';
             }
         },
+        /*
+
+        TODO: implement font tag (right now it's not safe)
+
+        "font": {
+            openTag:function(params,content) {
+                params = params.substr(1,params.length - 1);
+                params = '<font "' + params + '" >';
+                return "<font>";
+            },
+            closeTag:function(params,content){
+                return '</font>';
+            },
+            displayContent:true},   
+        },
+        */
         "i": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-i">';
@@ -225,6 +241,24 @@ var XBBCODE = (function() {
                 return '</span>';
             }
         },
+
+        "sub": {
+            openTag: function(params,content) {
+                return '<sub>';
+            },
+            closeTag: function(params,content) {
+                return '</sub>';
+            }
+        },
+        "sup": {
+            openTag: function(params,content) {
+                return '<sup>';
+            },
+            closeTag: function(params,content) {
+                return '</sup>';
+            }
+        },
+
         "table": {
             openTag: function(params,content) {
                 return '<table class="xbbcode-table">';
