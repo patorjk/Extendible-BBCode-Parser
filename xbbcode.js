@@ -452,7 +452,7 @@ var XBBCODE = (function() {
             reTagNamesParts.lastIndex = 0;
             childTag = (matchingTags[ii].match(reTagNamesParts))[2].toLowerCase();
             
-            if ( pInfo.restrictChildrenTo.length > 0 ) {
+            if ( pInfo && pInfo.restrictChildrenTo && pInfo.restrictChildrenTo.length > 0 ) {
                 if ( !pInfo.validChildLookup[childTag] ) {
                     errStr = "The tag \"" + childTag + "\" is not allowed as a child of the tag \"" + parentTag + "\".";
                     errQueue.push(errStr);
