@@ -112,6 +112,15 @@ var XBBCODE = (function() {
                 return '';
             }
         },
+         "center": {
+            openTag: function(params,content) {
+                return '<span class="xbbcode-center">';
+            },
+            closeTag: function(params,content) {
+                return '</span>';
+            }
+        },
+
         "code": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-code">';
@@ -184,6 +193,15 @@ var XBBCODE = (function() {
             },
             displayContent: false
         },
+        "li": {
+            openTag: function(params,content) {
+                return "<li>";
+            },
+            closeTag: function(params,content) {
+                return "</li>";
+            },
+            restrictParentsTo: ["list","ul","ol"]
+        },
         "list": {
             openTag: function(params,content) {
                 return '<ul>';
@@ -201,6 +219,15 @@ var XBBCODE = (function() {
                 return '';
             },
             noParse: true
+        },
+        "ol": {
+            openTag: function(params,content) {
+                return '<ol>';
+            },
+            closeTag: function(params,content) {
+                return '</ol>';
+            },
+            restrictChildrenTo: ["*", "li"]
         },
         "php": {
             openTag: function(params,content) {
@@ -334,6 +361,15 @@ var XBBCODE = (function() {
                 return '</span>';
             }
         },
+        "ul": {
+            openTag: function(params,content) {
+                return '<ul>';
+            },
+            closeTag: function(params,content) {
+                return '</ul>';
+            },
+            restrictChildrenTo: ["*", "li"]
+        },
         "url": {
             openTag: function(params,content) {
             
@@ -368,7 +404,7 @@ var XBBCODE = (function() {
             closeTag: function(params,content) {
                 return "</li>";
             },
-            restrictParentsTo: ["list"]
+            restrictParentsTo: ["list","ul","ol"]
         }
     };
     
