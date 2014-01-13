@@ -22,6 +22,21 @@
     font-style: italic; 
 }
 
+.xbbcode-justify {
+	display: block;
+	text-align: justify;
+}
+
+.xbbcode-left {
+	display: block;
+	text-align: left;
+}
+
+.xbbcode-right {
+	display: block;
+	text-align: right;
+}
+
 .xbbcode-s {
     text-decoration: line-through;
 }

@@ -41,6 +41,8 @@ var XBBCODE = (function() {
         urlPattern = /^(?:https?|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:@#%&()~_?\+=\/\\\.]*$/,
         colorNamePattern = /^(?:red|green|blue|orange|yellow|black|white|brown|gray|silver|purple|maroon|fushsia|lime|olive|navy|teal|aqua)$/,
         colorCodePattern = /^#?[a-fA-F0-9]{6}$/,
+        emailPattern = /[^\s@]+@[^\s@]+\.[^\s@]+/,
+        fontFacePattern = /^([a-z][a-z0-9_]+|"[a-z][a-z0-9_\s]+")$/i,
         tags,
         tagList,
         tagsNoParseList = [],
@@ -112,7 +114,7 @@ var XBBCODE = (function() {
                 return '';
             }
         },
-         "center": {
+        "center": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-center">';
             },
@@ -152,22 +154,59 @@ var XBBCODE = (function() {
                 return '</span>';
             }
         },
-        /*
-
-        TODO: implement font tag (right now it's not safe)
+        "email": {
+            openTag: function(params,content) {
+            
+                var myEmail;
+            
+                if (!params) {
+                    myEmail = content.replace(/<.*?>/g,"");
+                } else {
+                    myEmail = params.substr(1);
+                }
+                
+                emailPattern.lastIndex = 0;
+                if ( !emailPattern.test( myEmail ) ) {
+                    return '<a>';
+                }
+            
+                return '<a href="mailto:' + myEmail + '">';
+            },
+            closeTag: function(params,content) {
+                return '</a>';
+            }
+        },
+        "face": {
+            openTag: function(params,content) {
+            
+                var faceCode = params.substr(1) || "inherit";
+                fontFacePattern.lastIndex = 0;
+                if ( !fontFacePattern.test( faceCode ) ) {          
+                        faceCode = "inherit";
+                }
+                return '<span style="font-family:' + faceCode + '">';
+            },
+            closeTag: function(params,content) {
+                return '</span>';
+            }
+        },
+        
 
         "font": {
-            openTag:function(params,content) {
-                params = params.substr(1,params.length - 1);
-                params = '<font "' + params + '" >';
-                return "<font>";
+            openTag: function(params,content) {
+            
+                var faceCode = params.substr(1) || "inherit";
+                fontFacePattern.lastIndex = 0;
+                if ( !fontFacePattern.test( faceCode ) ) {          
+                        faceCode = "inherit";
+                }
+                return '<span style="font-family:' + faceCode + '">';
             },
-            closeTag:function(params,content){
-                return '</font>';
-            },
-            displayContent:true},   
+            closeTag: function(params,content) {
+                return '</span>';
+            }  
         },
-        */
+        
         "i": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-i">';
@@ -192,6 +231,45 @@ var XBBCODE = (function() {
                 return '';
             },
             displayContent: false
+        },
+        "justify": {
+            openTag: function(params,content) {
+                return '<span class="xbbcode-justify">';
+            },
+            closeTag: function(params,content) {
+                return '</span>';
+            }
+        },
+        "large": {
+            openTag: function(params,content) {
+				var params = params || '';
+				var colorCode = params.substr(1) || "inherit";
+                colorNamePattern.lastIndex = 0;
+                colorCodePattern.lastIndex = 0;
+                if ( !colorNamePattern.test( colorCode ) ) {
+                    if ( !colorCodePattern.test( colorCode ) ) {
+                        colorCode = "inherit";
+                    } else {
+                        if (colorCode.substr(0,1) !== "#") {
+                            colorCode = "#" + colorCode;
+                        }
+                    }
+                }
+            
+               
+                return '<span class="xbbcode-size-36" style="color:' + colorCode + '">';
+            },
+            closeTag: function(params,content) {
+                return '</span>';
+            }
+        },
+        "left": {
+            openTag: function(params,content) {
+                return '<span class="xbbcode-left">';
+            },
+            closeTag: function(params,content) {
+                return '</span>';
+            }
         },
         "li": {
             openTag: function(params,content) {
@@ -246,6 +324,14 @@ var XBBCODE = (function() {
                 return '</blockquote>';
             }
         },
+        "right": {
+            openTag: function(params,content) {
+                return '<span class="xbbcode-right">';
+            },
+            closeTag: function(params,content) {
+                return '</span>';
+            }
+        },
         "s": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-s">';
@@ -263,6 +349,28 @@ var XBBCODE = (function() {
                 }
             
                 return '<span class="xbbcode-size-' + mySize + '">';
+            },
+            closeTag: function(params,content) {
+                return '</span>';
+            }
+        },
+        "small": {
+            openTag: function(params,content) {
+				var params = params || '';
+				var colorCode = params.substr(1) || "inherit";
+                colorNamePattern.lastIndex = 0;
+                colorCodePattern.lastIndex = 0;
+                if ( !colorNamePattern.test( colorCode ) ) {
+                    if ( !colorCodePattern.test( colorCode ) ) {
+                        colorCode = "inherit";
+                    } else {
+                        if (colorCode.substr(0,1) !== "#") {
+                            colorCode = "#" + colorCode;
+                        }
+                    }
+                }
+            
+                return '<span class="xbbcode-size-10" style="color:' + colorCode + '">';
             },
             closeTag: function(params,content) {
                 return '</span>';
