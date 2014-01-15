@@ -6,6 +6,13 @@
 
 }
 
+.xbbcode-center {
+    margin-left:auto;
+	margin-right:auto;
+	display: block;
+	text-align: center;
+}
+
 .xbbcode-code {
     white-space: pre-wrap;
     font-family: monospace;
@@ -13,6 +20,21 @@
 
 .xbbcode-i {
     font-style: italic; 
+}
+
+.xbbcode-justify {
+	display: block;
+	text-align: justify;
+}
+
+.xbbcode-left {
+	display: block;
+	text-align: left;
+}
+
+.xbbcode-right {
+	display: block;
+	text-align: right;
 }
 
 .xbbcode-s {
