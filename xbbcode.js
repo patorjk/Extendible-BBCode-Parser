@@ -38,7 +38,7 @@ var XBBCODE = (function() {
     // -----------------------------------------------------------------------------
 
     var me = {},
-        urlPattern = /^(?:https?|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:@#%&()~_?\+=\/\\\.]*$/,
+        urlPattern = /^(?:https?|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:;@#%&()~_?\+=\/\\\.]*$/,
         colorNamePattern = /^(?:red|green|blue|orange|yellow|black|white|brown|gray|silver|purple|maroon|fushsia|lime|olive|navy|teal|aqua)$/,
         colorCodePattern = /^#?[a-fA-F0-9]{6}$/,
         emailPattern = /[^\s@]+@[^\s@]+\.[^\s@]+/,
