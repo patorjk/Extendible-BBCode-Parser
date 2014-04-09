@@ -517,8 +517,8 @@ var XBBCODE = (function() {
     };
 
     // create tag list and lookup fields
-    tagList = [];
-    (function() {
+    function initTags() {
+        tagList = [];
         var prop,
             ii,
             len;
@@ -548,24 +548,26 @@ var XBBCODE = (function() {
                 }
             }
         }
-    })();
 
-    bbRegExp = new RegExp("<bbcl=([0-9]+) (" + tagList.join("|") + ")([ =][^>]*?)?>((?:.|[\\r\\n])*?)<bbcl=\\1 /\\2>", "gi");
-    pbbRegExp = new RegExp("\\[(" + tagList.join("|") + ")([ =][^\\]]*?)?\\]([^\\[]*?)\\[/\\1\\]", "gi");
-    pbbRegExp2 = new RegExp("\\[(" + tagsNoParseList.join("|") + ")([ =][^\\]]*?)?\\]([\\s\\S]*?)\\[/\\1\\]", "gi");
+        bbRegExp = new RegExp("<bbcl=([0-9]+) (" + tagList.join("|") + ")([ =][^>]*?)?>((?:.|[\\r\\n])*?)<bbcl=\\1 /\\2>", "gi");
+        pbbRegExp = new RegExp("\\[(" + tagList.join("|") + ")([ =][^\\]]*?)?\\]([^\\[]*?)\\[/\\1\\]", "gi");
+        pbbRegExp2 = new RegExp("\\[(" + tagsNoParseList.join("|") + ")([ =][^\\]]*?)?\\]([\\s\\S]*?)\\[/\\1\\]", "gi");
 
-    // create the regex for escaping ['s that aren't apart of tags
-    (function() {
-        var closeTagList = [];
-        for (var ii = 0; ii < tagList.length; ii++) {
-            if ( tagList[ii] !== "\\*" ) { // the * tag doesn't have an offical closing tag
-                closeTagList.push ( "/" + tagList[ii] );
+        // create the regex for escaping ['s that aren't apart of tags
+        (function() {
+            var closeTagList = [];
+            for (var ii = 0; ii < tagList.length; ii++) {
+                if ( tagList[ii] !== "\\*" ) { // the * tag doesn't have an offical closing tag
+                    closeTagList.push ( "/" + tagList[ii] );
+                }
             }
-        }
 
-        openTags = new RegExp("(\\[)((?:" + tagList.join("|") + ")(?:[ =][^\\]]*?)?)(\\])", "gi");
-        closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
-    })();
+            openTags = new RegExp("(\\[)((?:" + tagList.join("|") + ")(?:[ =][^\\]]*?)?)(\\])", "gi");
+            closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
+        })();
+
+    };
+    initTags();
 
     // -----------------------------------------------------------------------------
     // private functions
@@ -711,6 +713,20 @@ var XBBCODE = (function() {
     // -----------------------------------------------------------------------------
     // public functions
     // -----------------------------------------------------------------------------
+
+    // API, Expose all available tags
+    me.tags = function() {
+        return tags;
+    }
+
+    // API
+    me.addTags = function(newtags) {
+        var tag;
+        for (tag in newtags) {
+            tags[tag] = newtags[tag];
+        }
+        initTags();
+    }
 
     me.process = function(config) {
 
