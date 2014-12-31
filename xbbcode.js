@@ -683,7 +683,7 @@ var XBBCODE = (function() {
 
             var innerListTxt = matchStr;
             while (innerListTxt !== (innerListTxt = innerListTxt.replace(/\[\*\]([^\[]*?)(\[\*\]|>\/list])/i, function(matchStr,contents,endTag) {
-                if (endTag === ">/list]") {
+                if (endTag.toLowerCase() === ">/list]") {
                     endTag = "</*]</list]";
                 } else {
                     endTag = "</*][*]";
