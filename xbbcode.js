@@ -39,7 +39,7 @@ var XBBCODE = (function() {
 
     var me = {},
         urlPattern = /^(?:https?|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:;@#%&()~_?\+=\/\\\.]*$/,
-        colorNamePattern = /^(?:red|green|blue|orange|yellow|black|white|brown|gray|silver|purple|maroon|fushsia|lime|olive|navy|teal|aqua)$/,
+        colorNamePattern = /^(?:aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen)$/,
         colorCodePattern = /^#?[a-fA-F0-9]{6}$/,
         emailPattern = /[^\s@]+@[^\s@]+\.[^\s@]+/,
         fontFacePattern = /^([a-z][a-z0-9_]+|"[a-z][a-z0-9_\s]+")$/i,
@@ -135,7 +135,7 @@ var XBBCODE = (function() {
         "color": {
             openTag: function(params,content) {
 
-                var colorCode = params.substr(1) || "black";
+                var colorCode = (params.substr(1)).toLowerCase() || "black";
                 colorNamePattern.lastIndex = 0;
                 colorCodePattern.lastIndex = 0;
                 if ( !colorNamePattern.test( colorCode ) ) {
@@ -615,7 +615,7 @@ var XBBCODE = (function() {
         }
 
         tagContents = tagContents.replace(bbRegExp, function(matchStr, bbcodeLevel, tagName, tagParams, tagContents ) {
-            errQueue = checkParentChildRestrictions(tagName, matchStr, bbcodeLevel, tagName, tagParams, tagContents, errQueue);
+            errQueue = checkParentChildRestrictions(tagName.toLowerCase(), matchStr, bbcodeLevel, tagName, tagParams, tagContents, errQueue);
             return matchStr;
         });
         return errQueue;
@@ -683,13 +683,12 @@ var XBBCODE = (function() {
 
             var innerListTxt = matchStr;
             while (innerListTxt !== (innerListTxt = innerListTxt.replace(/\[\*\]([^\[]*?)(\[\*\]|>\/list])/i, function(matchStr,contents,endTag) {
-                if (endTag === ">/list]") {
+                if (endTag.toLowerCase() === ">/list]") {
                     endTag = "</*]</list]";
                 } else {
                     endTag = "</*][*]";
                 }
-                var tmp = "<*]" + contents + endTag;
-                return tmp;
+                return "<*]" + contents + endTag;
             })));
 
             innerListTxt = innerListTxt.replace(/>/g, "<");
@@ -699,7 +698,7 @@ var XBBCODE = (function() {
         // add ['s for our tags back in
         text = text.replace(/</g, "[");
         return text;
-    };
+    }
 
     function addBbcodeLevels(text) {
         while ( text !== (text = text.replace(pbbRegExp, function(matchStr, tagName, tagParams, tagContents) {
@@ -778,11 +777,11 @@ var XBBCODE = (function() {
         ret.html = ret.html.replace("&#91;", "["); // put ['s back in
         ret.html = ret.html.replace("&#93;", "]"); // put ['s back in
 
-        ret.error = (errQueue.length === 0) ? false : true;
+        ret.error = errQueue.length !== 0;
         ret.errorQueue = errQueue;
 
         return ret;
-    }
+    };
 
     return me;
 })();
