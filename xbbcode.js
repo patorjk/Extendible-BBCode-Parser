@@ -774,9 +774,11 @@ var XBBCODE = (function() {
             ret.html = '<div style="white-space:pre-wrap;">' + ret.html + '</div>';
         }
 
-        ret.html = ret.html.replace("&#91;", "["); // put ['s back in
-        ret.html = ret.html.replace("&#93;", "]"); // put ['s back in
-
+		if (!config.escapeHtml) {
+			ret.html = ret.html.replace("&#91;", "["); // put ['s back in
+        	ret.html = ret.html.replace("&#93;", "]"); // put ['s back in
+		}
+		
         ret.error = errQueue.length !== 0;
         ret.errorQueue = errQueue;
 
