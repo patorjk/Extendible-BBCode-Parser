@@ -23,25 +23,25 @@ So I wrote this module in an attempt to solve these issues.
 ## Usage (Browser)
 
 Including `xbbcode.js` will expose its API through an `XBBCODE` object that you can use to process BBCode into HTML.
-
-    <head>
-      <!-- Optional styling for .xbbcode-* classes -->
-      <link rel="stylesheet" type="text/css" href="xbbcode.css">
-    </head>
-    <body>
-      <script src="xbbcode.js"></script>
-      <script>
-        var result = XBBCODE.process({
-          text: "[b]Hello world[/b]",
-          removeMisalignedTags: false,
-          addInLineBreaks: false
-        });
-        console.error("Errors", result.error);
-        console.dir(result.errorQueue);
-        console.log(result.html);  //=> <span class="xbbcode-b">Hello world</span>
-      </script>
-    </body>
-
+```html
+<head>
+  <!-- Optional styling for .xbbcode-* classes -->
+  <link rel="stylesheet" type="text/css" href="xbbcode.css">
+</head>
+<body>
+  <script src="xbbcode.js"></script>
+  <script>
+    var result = XBBCODE.process({
+      text: "[b]Hello world[/b]",
+      removeMisalignedTags: false,
+      addInLineBreaks: false
+    });
+    console.error("Errors", result.error);
+    console.dir(result.errorQueue);
+    console.log(result.html);  //=> <span class="xbbcode-b">Hello world</span>
+  </script>
+</body>
+```
 ## Adding new tags
 
 To add a new tag to your BBCode, add properties to the "tags" object inside of the XBBCODE 
@@ -50,17 +50,17 @@ object.
 For example, say you wanted to add a tag called `[googleit]` which would change its 
 contents into a link of its google search results. You'd implement that by adding this to 
 the tags object:
-
-	"googleit": {
-	    openTag: function(params,content) {
-	        var website = 'http://www.google.com/#q=' + content;
-	        return '<a href="' + website + '">';
-	    },
-	    closeTag: function(params,content) {
-	        return '</a>';
-	    }
-	}
-
+```js
+"googleit": {
+    openTag: function(params,content) {
+        var website = 'http://www.google.com/#q=' + content;
+        return '<a href="' + website + '">';
+    },
+    closeTag: function(params,content) {
+        return '</a>';
+    }
+}
+```
 That will transform this BBCode:
 
     [googleit]ta-da![/googleit]
