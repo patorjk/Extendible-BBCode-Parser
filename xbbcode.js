@@ -29,9 +29,8 @@ THE SOFTWARE.
     to add in your own tags.
 */
 
-"use strict";
-
 var XBBCODE = (function() {
+    "use strict";
 
     // -----------------------------------------------------------------------------
     // Set up private variables
@@ -242,8 +241,9 @@ var XBBCODE = (function() {
         },
         "large": {
             openTag: function(params,content) {
-				var params = params || '';
-				var colorCode = params.substr(1) || "inherit";
+				params = params || '';
+				
+                var colorCode = params.substr(1) || "inherit";
                 colorNamePattern.lastIndex = 0;
                 colorCodePattern.lastIndex = 0;
                 if ( !colorNamePattern.test( colorCode ) ) {
@@ -356,8 +356,9 @@ var XBBCODE = (function() {
         },
         "small": {
             openTag: function(params,content) {
-				var params = params || '';
-				var colorCode = params.substr(1) || "inherit";
+				params = params || '';
+				
+                var colorCode = params.substr(1) || "inherit";
                 colorNamePattern.lastIndex = 0;
                 colorCodePattern.lastIndex = 0;
                 if ( !colorNamePattern.test( colorCode ) ) {
@@ -566,7 +567,7 @@ var XBBCODE = (function() {
             closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
         })();
 
-    };
+    }
     initTags();
 
     // -----------------------------------------------------------------------------
@@ -716,7 +717,7 @@ var XBBCODE = (function() {
     // API, Expose all available tags
     me.tags = function() {
         return tags;
-    }
+    };
 
     // API
     me.addTags = function(newtags) {
@@ -725,7 +726,7 @@ var XBBCODE = (function() {
             tags[tag] = newtags[tag];
         }
         initTags();
-    }
+    };
 
     me.process = function(config) {
 
@@ -761,7 +762,7 @@ var XBBCODE = (function() {
 
         errQueue = checkParentChildRestrictions("bbcode", config.text, -1, "", "", config.text);
 
-        ret.html = parse(config);;
+        ret.html = parse(config);
 
         if ( ret.html.indexOf("[") !== -1 || ret.html.indexOf("]") !== -1) {
             errQueue.push("Some tags appear to be misaligned.");
@@ -787,3 +788,8 @@ var XBBCODE = (function() {
 
     return me;
 })();
+
+// for node
+if (module) {
+    module.exports = XBBCODE;
+}
