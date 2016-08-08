@@ -133,7 +133,8 @@ var XBBCODE = (function() {
         },
         "color": {
             openTag: function(params,content) {
-
+                params = params || '';
+                
                 var colorCode = (params.substr(1)).toLowerCase() || "black";
                 colorNamePattern.lastIndex = 0;
                 colorCodePattern.lastIndex = 0;
@@ -177,6 +178,7 @@ var XBBCODE = (function() {
         },
         "face": {
             openTag: function(params,content) {
+                params = params || '';
 
                 var faceCode = params.substr(1) || "inherit";
                 fontFacePattern.lastIndex = 0;
@@ -193,6 +195,7 @@ var XBBCODE = (function() {
 
         "font": {
             openTag: function(params,content) {
+                params = params || '';
 
                 var faceCode = params.substr(1) || "inherit";
                 fontFacePattern.lastIndex = 0;
@@ -241,8 +244,8 @@ var XBBCODE = (function() {
         },
         "large": {
             openTag: function(params,content) {
-				params = params || '';
-				
+                params = params || '';
+
                 var colorCode = params.substr(1) || "inherit";
                 colorNamePattern.lastIndex = 0;
                 colorCodePattern.lastIndex = 0;
@@ -342,6 +345,7 @@ var XBBCODE = (function() {
         },
         "size": {
             openTag: function(params,content) {
+                params = params || '';
 
                 var mySize = parseInt(params.substr(1),10) || 0;
                 if (mySize < 4 || mySize > 40) {
@@ -356,8 +360,8 @@ var XBBCODE = (function() {
         },
         "small": {
             openTag: function(params,content) {
-				params = params || '';
-				
+                params = params || '';
+
                 var colorCode = params.substr(1) || "inherit";
                 colorNamePattern.lastIndex = 0;
                 colorCodePattern.lastIndex = 0;
@@ -779,7 +783,7 @@ var XBBCODE = (function() {
 			ret.html = ret.html.replace("&#91;", "["); // put ['s back in
         	ret.html = ret.html.replace("&#93;", "]"); // put ['s back in
 		}
-		
+
         ret.error = errQueue.length !== 0;
         ret.errorQueue = errQueue;
 
