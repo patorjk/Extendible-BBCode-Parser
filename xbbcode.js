@@ -41,24 +41,17 @@ var XBBCODE = (function() {
         this._pbbRegExp2 = null;
         this.openTags = null;
         this.closeTags = null;
-
-        this._parse = parse;
-        this._addBbcodeLevels = addBbcodeLevels;
-        this._checkParentChildRestrictions = checkParentChildRestrictions;
-        this._initTags = initTags;
     }
 
     // -----------------------------------------------------------------------------
     // Set up private variables
     // -----------------------------------------------------------------------------
 
-    var parser = {},
-        urlPattern = /^(?:https?|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:;,@#%&()~_?\+=\/\\\.]*$/,
+    var urlPattern = /^(?:https?|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:;,@#%&()~_?\+=\/\\\.]*$/,
         colorNamePattern = /^(?:aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen)$/,
         colorCodePattern = /^#?[a-fA-F0-9]{6}$/,
         emailPattern = /[^\s@]+@[^\s@]+\.[^\s@]+/,
-        fontFacePattern = /^([a-z][a-z0-9_]+|"[a-z][a-z0-9_\s]+")$/i,
-        defaultTags;
+        fontFacePattern = /^([a-z][a-z0-9_]+|"[a-z][a-z0-9_\s]+")$/i;
 
     /* -----------------------------------------------------------------------------
      * tags
@@ -101,7 +94,7 @@ var XBBCODE = (function() {
      *    tag names, just make sure the tag name gets escaped properly (if needed).
      * --------------------------------------------------------------------------- */
 
-    defaultTags = {
+    var defaultTags = {
         "b": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-b">';
@@ -531,7 +524,7 @@ var XBBCODE = (function() {
     };
 
     // create tag list and lookup fields
-    function initTags() {
+    Parser.prototype._initTags = function() {
         var self = this;
         this._tagList = [];
         var tags = this._tags;
@@ -582,13 +575,14 @@ var XBBCODE = (function() {
             self.closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
         })();
 
-    }
+    };
 
     // -----------------------------------------------------------------------------
     // private functions
     // -----------------------------------------------------------------------------
 
-    function checkParentChildRestrictions(parentTag, bbcode, bbcodeLevel, tagName, tagParams, tagContents, errQueue) {
+    Parser.prototype._checkParentChildRestrictions = function(parentTag, bbcode, bbcodeLevel, tagName,
+                                                              tagParams, tagContents, errQueue) {
         var self = this;
         errQueue = errQueue || [];
         bbcodeLevel++;
@@ -634,7 +628,7 @@ var XBBCODE = (function() {
             return matchStr;
         });
         return errQueue;
-    }
+    };
 
     /*
         This function updates or adds a piece of metadata to each tag called "bbcl" which
@@ -662,7 +656,7 @@ var XBBCODE = (function() {
         return tagContent.replace(/<bbcl=[0-9]+ \/\*>/gi,"").replace(/<bbcl=[0-9]+ /gi,"&#91;").replace(/>/gi,"&#93;");
     }
 
-    function parse(config) {
+    Parser.prototype._parse = function(config) {
         var self = this;
         var output = config.text;
 
@@ -683,7 +677,7 @@ var XBBCODE = (function() {
 
         output = output.replace(this._bbRegExp, replaceFunct);
         return output;
-    }
+    };
 
     /*
         The star tag [*] is special in that it does not use a closing tag. Since this parser requires that tags to have a closing
@@ -717,14 +711,14 @@ var XBBCODE = (function() {
         return text;
     }
 
-    function addBbcodeLevels(text) {
+    Parser.prototype._addBbcodeLevels = function(text) {
         while ( text !== (text = text.replace(this._pbbRegExp, function(matchStr, tagName, tagParams, tagContents) {
             matchStr = matchStr.replace(/\[/g, "<");
             matchStr = matchStr.replace(/\]/g, ">");
             return updateTagDepths(matchStr);
         })) );
         return text;
-    }
+    };
 
     // -----------------------------------------------------------------------------
     // public functions
@@ -808,6 +802,7 @@ var XBBCODE = (function() {
         return ret;
     };
 
+    var parser = {};
     parser = new Parser();
     parser.Parser = Parser;
 
