@@ -664,7 +664,7 @@ var XBBCODE = (function() {
         var replaceFunct = function(matchStr, bbcodeLevel, tagName, tagParams, tagContents) {
             tagName = tagName.toLowerCase();
 
-            var processedContent = self._tags[tagName].noParse ? this._unprocess(tagContents) :
+            var processedContent = self._tags[tagName].noParse ? self._unprocess(tagContents) :
                     tagContents.replace(self._bbRegExp, replaceFunct),
                 openTag = self._tags[tagName].openTag(tagParams,processedContent),
                 closeTag = self._tags[tagName].closeTag(tagParams,processedContent);
