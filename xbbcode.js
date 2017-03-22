@@ -32,17 +32,6 @@ THE SOFTWARE.
 var XBBCODE = (function() {
     "use strict";
 
-    function Parser() {
-        this._tags = {};
-        this._tagList = [];
-        this._tagsNoParseList = [];
-        this._bbRegExp = null;
-        this._pbbRegExp = null;
-        this._pbbRegExp2 = null;
-        this.openTags = null;
-        this.closeTags = null;
-    }
-
     // -----------------------------------------------------------------------------
     // Set up private variables
     // -----------------------------------------------------------------------------
@@ -523,6 +512,18 @@ var XBBCODE = (function() {
         }
     };
 
+    function Parser() {
+        this._tags = {};
+        this._tagList = [];
+        this._tagsNoParseList = [];
+        this._bbRegExp = null;
+        this._pbbRegExp = null;
+        this._pbbRegExp2 = null;
+        this._openTags = null;
+        this._closeTags = null;
+        this._initialized = false;
+    }
+
     // create tag list and lookup fields
     Parser.prototype._initTags = function() {
         var self = this;
@@ -571,10 +572,10 @@ var XBBCODE = (function() {
                 }
             }
 
-            self.openTags = new RegExp("(\\[)((?:" + self._tagList.join("|") + ")(?:[ =][^\\]]*?)?)(\\])", "gi");
-            self.closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
+            self._openTags = new RegExp("(\\[)((?:" + self._tagList.join("|") + ")(?:[ =][^\\]]*?)?)(\\])", "gi");
+            self._closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
         })();
-
+        this._initialized = true;
     };
 
     // -----------------------------------------------------------------------------
@@ -635,7 +636,7 @@ var XBBCODE = (function() {
         indicates how deeply nested a particular tag was in the bbcode. This property is removed
         from the HTML code tags at the end of the processing.
     */
-    function updateTagDepths(tagContents) {
+    Parser.prototype._updateTagDepths = function(tagContents) {
         tagContents = tagContents.replace(/\<([^\>][^\>]*?)\>/gi, function(matchStr, subMatchStr) {
             var bbCodeLevel = subMatchStr.match(/^bbcl=([0-9]+) /);
             if (bbCodeLevel === null) {
@@ -647,14 +648,14 @@ var XBBCODE = (function() {
             }
         });
         return tagContents;
-    }
+    };
 
     /*
         This function removes the metadata added by the updateTagDepths function
     */
-    function unprocess(tagContent) {
+    Parser.prototype._unprocess = function(tagContent) {
         return tagContent.replace(/<bbcl=[0-9]+ \/\*>/gi,"").replace(/<bbcl=[0-9]+ /gi,"&#91;").replace(/>/gi,"&#93;");
-    }
+    };
 
     Parser.prototype._parse = function(config) {
         var self = this;
@@ -663,7 +664,7 @@ var XBBCODE = (function() {
         var replaceFunct = function(matchStr, bbcodeLevel, tagName, tagParams, tagContents) {
             tagName = tagName.toLowerCase();
 
-            var processedContent = self._tags[tagName].noParse ? unprocess(tagContents) :
+            var processedContent = self._tags[tagName].noParse ? this._unprocess(tagContents) :
                     tagContents.replace(self._bbRegExp, replaceFunct),
                 openTag = self._tags[tagName].openTag(tagParams,processedContent),
                 closeTag = self._tags[tagName].closeTag(tagParams,processedContent);
@@ -686,7 +687,7 @@ var XBBCODE = (function() {
         changed into their HTML entity form to prevent XSS and code injection), so we can use those characters as markers to
         help us define boundaries and figure out where to place the [/*] tags.
     */
-    function fixStarTag(text) {
+    Parser.prototype._fixStarTag = function(text) {
         text = text.replace(/\[(?!\*[ =\]]|list([ =][^\]]*)?\]|\/list[\]])/ig, "<");
         text = text.replace(/\[(?=list([ =][^\]]*)?\]|\/list[\]])/ig, ">");
 
@@ -709,13 +710,14 @@ var XBBCODE = (function() {
         // add ['s for our tags back in
         text = text.replace(/</g, "[");
         return text;
-    }
+    };
 
     Parser.prototype._addBbcodeLevels = function(text) {
+        var self = this;
         while ( text !== (text = text.replace(this._pbbRegExp, function(matchStr, tagName, tagParams, tagContents) {
             matchStr = matchStr.replace(/\[/g, "<");
             matchStr = matchStr.replace(/\]/g, ">");
-            return updateTagDepths(matchStr);
+            return self._updateTagDepths(matchStr);
         })) );
         return text;
     };
@@ -743,8 +745,8 @@ var XBBCODE = (function() {
     };
 
     Parser.prototype.process = function(config) {
-        if (!this._bbRegExp && !this._pbbRegExp && !this._pbbRegExp2) {
-            throw new Error('No tags. Add tags before the process method with addDefaultTags or addTags');
+        if (!this._initialized) {
+            throw new Error('Tags are not initialized');
         }
         var ret = {html: "", error: false},
             errQueue = [];
@@ -752,10 +754,10 @@ var XBBCODE = (function() {
         config.text = config.text.replace(/</g, "&lt;"); // escape HTML tag brackets
         config.text = config.text.replace(/>/g, "&gt;"); // escape HTML tag brackets
 
-        config.text = config.text.replace(this.openTags, function(matchStr, openB, contents, closeB) {
+        config.text = config.text.replace(this._openTags, function(matchStr, openB, contents, closeB) {
             return "<" + contents + ">";
         });
-        config.text = config.text.replace(this.closeTags, function(matchStr, openB, contents, closeB) {
+        config.text = config.text.replace(this._closeTags, function(matchStr, openB, contents, closeB) {
             return "<" + contents + ">";
         });
 
@@ -773,7 +775,7 @@ var XBBCODE = (function() {
             return "[" + tagName + tagParams + "]" + tagContents + "[/" + tagName + "]";
         })) );
 
-        config.text = fixStarTag(config.text); // add in closing tags for the [*] tag
+        config.text = this._fixStarTag(config.text); // add in closing tags for the [*] tag
         config.text = this._addBbcodeLevels(config.text); // add in level metadata
 
         errQueue = this._checkParentChildRestrictions("bbcode", config.text, -1, "", "", config.text);
@@ -804,6 +806,7 @@ var XBBCODE = (function() {
 
     var parser = {};
     parser = new Parser();
+    parser.addDefaultTags();
     parser.Parser = Parser;
 
     return parser;
