@@ -32,24 +32,33 @@ THE SOFTWARE.
 var XBBCODE = (function() {
     "use strict";
 
+    function Parser() {
+        this._tags = {};
+        this._tagList = [];
+        this._tagsNoParseList = [];
+        this._bbRegExp = null;
+        this._pbbRegExp = null;
+        this._pbbRegExp2 = null;
+        this.openTags = null;
+        this.closeTags = null;
+
+        this._parse = parse;
+        this._addBbcodeLevels = addBbcodeLevels;
+        this._checkParentChildRestrictions = checkParentChildRestrictions;
+        this._initTags = initTags;
+    }
+
     // -----------------------------------------------------------------------------
     // Set up private variables
     // -----------------------------------------------------------------------------
 
-    var me = {},
+    var parser = {},
         urlPattern = /^(?:https?|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:;,@#%&()~_?\+=\/\\\.]*$/,
         colorNamePattern = /^(?:aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen)$/,
         colorCodePattern = /^#?[a-fA-F0-9]{6}$/,
         emailPattern = /[^\s@]+@[^\s@]+\.[^\s@]+/,
         fontFacePattern = /^([a-z][a-z0-9_]+|"[a-z][a-z0-9_\s]+")$/i,
-        tags,
-        tagList,
-        tagsNoParseList = [],
-        bbRegExp,
-        pbbRegExp,
-        pbbRegExp2,
-        openTags,
-        closeTags;
+        defaultTags;
 
     /* -----------------------------------------------------------------------------
      * tags
@@ -92,7 +101,7 @@ var XBBCODE = (function() {
      *    tag names, just make sure the tag name gets escaped properly (if needed).
      * --------------------------------------------------------------------------- */
 
-    tags = {
+    defaultTags = {
         "b": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-b">';
@@ -134,7 +143,7 @@ var XBBCODE = (function() {
         "color": {
             openTag: function(params,content) {
                 params = params || '';
-                
+
                 var colorCode = (params.substr(1)).toLowerCase() || "black";
                 colorNamePattern.lastIndex = 0;
                 colorCodePattern.lastIndex = 0;
@@ -523,18 +532,20 @@ var XBBCODE = (function() {
 
     // create tag list and lookup fields
     function initTags() {
-        tagList = [];
+        var self = this;
+        this._tagList = [];
+        var tags = this._tags;
         var prop,
             ii,
             len;
         for (prop in tags) {
             if (tags.hasOwnProperty(prop)) {
                 if (prop === "*") {
-                    tagList.push("\\" + prop);
+                    this._tagList.push("\\" + prop);
                 } else {
-                    tagList.push(prop);
+                    this._tagList.push(prop);
                     if ( tags[prop].noParse ) {
-                        tagsNoParseList.push(prop);
+                        this._tagsNoParseList.push(prop);
                     }
                 }
 
@@ -554,44 +565,43 @@ var XBBCODE = (function() {
             }
         }
 
-        bbRegExp = new RegExp("<bbcl=([0-9]+) (" + tagList.join("|") + ")([ =][^>]*?)?>((?:.|[\\r\\n])*?)<bbcl=\\1 /\\2>", "gi");
-        pbbRegExp = new RegExp("\\[(" + tagList.join("|") + ")([ =][^\\]]*?)?\\]([^\\[]*?)\\[/\\1\\]", "gi");
-        pbbRegExp2 = new RegExp("\\[(" + tagsNoParseList.join("|") + ")([ =][^\\]]*?)?\\]([\\s\\S]*?)\\[/\\1\\]", "gi");
+        this._bbRegExp = new RegExp("<bbcl=([0-9]+) (" + this._tagList.join("|") + ")([ =][^>]*?)?>((?:.|[\\r\\n])*?)<bbcl=\\1 /\\2>", "gi");
+        this._pbbRegExp = new RegExp("\\[(" + this._tagList.join("|") + ")([ =][^\\]]*?)?\\]([^\\[]*?)\\[/\\1\\]", "gi");
+        this._pbbRegExp2 = new RegExp("\\[(" + this._tagsNoParseList.join("|") + ")([ =][^\\]]*?)?\\]([\\s\\S]*?)\\[/\\1\\]", "gi");
 
         // create the regex for escaping ['s that aren't apart of tags
         (function() {
             var closeTagList = [];
-            for (var ii = 0; ii < tagList.length; ii++) {
-                if ( tagList[ii] !== "\\*" ) { // the * tag doesn't have an offical closing tag
-                    closeTagList.push ( "/" + tagList[ii] );
+            for (var ii = 0; ii < self._tagList.length; ii++) {
+                if ( self._tagList[ii] !== "\\*" ) { // the * tag doesn't have an offical closing tag
+                    closeTagList.push ( "/" + self._tagList[ii] );
                 }
             }
 
-            openTags = new RegExp("(\\[)((?:" + tagList.join("|") + ")(?:[ =][^\\]]*?)?)(\\])", "gi");
-            closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
+            self.openTags = new RegExp("(\\[)((?:" + self._tagList.join("|") + ")(?:[ =][^\\]]*?)?)(\\])", "gi");
+            self.closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
         })();
 
     }
-    initTags();
 
     // -----------------------------------------------------------------------------
     // private functions
     // -----------------------------------------------------------------------------
 
     function checkParentChildRestrictions(parentTag, bbcode, bbcodeLevel, tagName, tagParams, tagContents, errQueue) {
-
+        var self = this;
         errQueue = errQueue || [];
         bbcodeLevel++;
 
         // get a list of all of the child tags to this tag
-        var reTagNames = new RegExp("(<bbcl=" + bbcodeLevel + " )(" + tagList.join("|") + ")([ =>])","gi"),
-            reTagNamesParts = new RegExp("(<bbcl=" + bbcodeLevel + " )(" + tagList.join("|") + ")([ =>])","i"),
+        var reTagNames = new RegExp("(<bbcl=" + bbcodeLevel + " )(" + this._tagList.join("|") + ")([ =>])","gi"),
+            reTagNamesParts = new RegExp("(<bbcl=" + bbcodeLevel + " )(" + this._tagList.join("|") + ")([ =>])","i"),
             matchingTags = tagContents.match(reTagNames) || [],
             cInfo,
             errStr,
             ii,
             childTag,
-            pInfo = tags[parentTag] || {};
+            pInfo = this._tags[parentTag] || {};
 
         reTagNames.lastIndex = 0;
 
@@ -609,7 +619,7 @@ var XBBCODE = (function() {
                     errQueue.push(errStr);
                 }
             }
-            cInfo = tags[childTag] || {};
+            cInfo = this._tags[childTag] || {};
             if ( cInfo.restrictParentsTo.length > 0 ) {
                 if ( !cInfo.validParentLookup[parentTag] ) {
                     errStr = "The tag \"" + parentTag + "\" is not allowed as a parent of the tag \"" + childTag + "\".";
@@ -619,8 +629,8 @@ var XBBCODE = (function() {
 
         }
 
-        tagContents = tagContents.replace(bbRegExp, function(matchStr, bbcodeLevel, tagName, tagParams, tagContents ) {
-            errQueue = checkParentChildRestrictions(tagName.toLowerCase(), matchStr, bbcodeLevel, tagName, tagParams, tagContents, errQueue);
+        tagContents = tagContents.replace(this._bbRegExp, function(matchStr, bbcodeLevel, tagName, tagParams, tagContents ) {
+            errQueue = self._checkParentChildRestrictions(tagName.toLowerCase(), matchStr, bbcodeLevel, tagName, tagParams, tagContents, errQueue);
             return matchStr;
         });
         return errQueue;
@@ -652,24 +662,26 @@ var XBBCODE = (function() {
         return tagContent.replace(/<bbcl=[0-9]+ \/\*>/gi,"").replace(/<bbcl=[0-9]+ /gi,"&#91;").replace(/>/gi,"&#93;");
     }
 
-    var replaceFunct = function(matchStr, bbcodeLevel, tagName, tagParams, tagContents) {
-
-        tagName = tagName.toLowerCase();
-
-        var processedContent = tags[tagName].noParse ? unprocess(tagContents) : tagContents.replace(bbRegExp, replaceFunct),
-            openTag = tags[tagName].openTag(tagParams,processedContent),
-            closeTag = tags[tagName].closeTag(tagParams,processedContent);
-
-        if ( tags[tagName].displayContent === false) {
-            processedContent = "";
-        }
-
-        return openTag + processedContent + closeTag;
-    };
-
     function parse(config) {
+        var self = this;
         var output = config.text;
-        output = output.replace(bbRegExp, replaceFunct);
+
+        var replaceFunct = function(matchStr, bbcodeLevel, tagName, tagParams, tagContents) {
+            tagName = tagName.toLowerCase();
+
+            var processedContent = self._tags[tagName].noParse ? unprocess(tagContents) :
+                    tagContents.replace(self._bbRegExp, replaceFunct),
+                openTag = self._tags[tagName].openTag(tagParams,processedContent),
+                closeTag = self._tags[tagName].closeTag(tagParams,processedContent);
+
+            if (self._tags[tagName].displayContent === false) {
+                processedContent = "";
+            }
+
+            return openTag + processedContent + closeTag;
+        };
+
+        output = output.replace(this._bbRegExp, replaceFunct);
         return output;
     }
 
@@ -706,7 +718,7 @@ var XBBCODE = (function() {
     }
 
     function addBbcodeLevels(text) {
-        while ( text !== (text = text.replace(pbbRegExp, function(matchStr, tagName, tagParams, tagContents) {
+        while ( text !== (text = text.replace(this._pbbRegExp, function(matchStr, tagName, tagParams, tagContents) {
             matchStr = matchStr.replace(/\[/g, "<");
             matchStr = matchStr.replace(/\]/g, ">");
             return updateTagDepths(matchStr);
@@ -719,31 +731,37 @@ var XBBCODE = (function() {
     // -----------------------------------------------------------------------------
 
     // API, Expose all available tags
-    me.tags = function() {
-        return tags;
+    Parser.prototype.tags = function() {
+        return this._tags;
     };
 
     // API
-    me.addTags = function(newtags) {
+    Parser.prototype.addTags = function(newtags) {
         var tag;
         for (tag in newtags) {
-            tags[tag] = newtags[tag];
+            this._tags[tag] = newtags[tag];
         }
-        initTags();
+        this._initTags();
     };
 
-    me.process = function(config) {
+    Parser.prototype.addDefaultTags = function() {
+        this.addTags(defaultTags);
+    };
 
+    Parser.prototype.process = function(config) {
+        if (!this._bbRegExp && !this._pbbRegExp && !this._pbbRegExp2) {
+            throw new Error('No tags. Add tags before the process method with addDefaultTags or addTags');
+        }
         var ret = {html: "", error: false},
             errQueue = [];
 
         config.text = config.text.replace(/</g, "&lt;"); // escape HTML tag brackets
         config.text = config.text.replace(/>/g, "&gt;"); // escape HTML tag brackets
 
-        config.text = config.text.replace(openTags, function(matchStr, openB, contents, closeB) {
+        config.text = config.text.replace(this.openTags, function(matchStr, openB, contents, closeB) {
             return "<" + contents + ">";
         });
-        config.text = config.text.replace(closeTags, function(matchStr, openB, contents, closeB) {
+        config.text = config.text.replace(this.closeTags, function(matchStr, openB, contents, closeB) {
             return "<" + contents + ">";
         });
 
@@ -753,7 +771,7 @@ var XBBCODE = (function() {
         config.text = config.text.replace(/>/g, "]"); // escape ['s that aren't apart of tags
 
         // process tags that don't have their content parsed
-        while ( config.text !== (config.text = config.text.replace(pbbRegExp2, function(matchStr, tagName, tagParams, tagContents) {
+        while ( config.text !== (config.text = config.text.replace(this._pbbRegExp2, function(matchStr, tagName, tagParams, tagContents) {
             tagContents = tagContents.replace(/\[/g, "&#91;");
             tagContents = tagContents.replace(/\]/g, "&#93;");
             tagParams = tagParams || "";
@@ -762,11 +780,11 @@ var XBBCODE = (function() {
         })) );
 
         config.text = fixStarTag(config.text); // add in closing tags for the [*] tag
-        config.text = addBbcodeLevels(config.text); // add in level metadata
+        config.text = this._addBbcodeLevels(config.text); // add in level metadata
 
-        errQueue = checkParentChildRestrictions("bbcode", config.text, -1, "", "", config.text);
+        errQueue = this._checkParentChildRestrictions("bbcode", config.text, -1, "", "", config.text);
 
-        ret.html = parse(config);
+        ret.html = this._parse(config);
 
         if ( ret.html.indexOf("[") !== -1 || ret.html.indexOf("]") !== -1) {
             errQueue.push("Some tags appear to be misaligned.");
@@ -790,7 +808,10 @@ var XBBCODE = (function() {
         return ret;
     };
 
-    return me;
+    parser = new Parser();
+    parser.Parser = Parser;
+
+    return parser;
 })();
 
 // for node
