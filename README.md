@@ -73,3 +73,7 @@ Refer to xbbcode.js for additional configuration options and other examples.
 
 Hopefully this will be somewhat useful for you. If you have any suggestions or find any 
 bugs please let me know.
+
+### Adding 'single' tags
+
+Simply do what you had been doing so far, but without providing an closeTag function.
