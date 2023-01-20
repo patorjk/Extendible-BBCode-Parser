@@ -93,6 +93,11 @@ var XBBCODE = (function() {
      * --------------------------------------------------------------------------- */
 
     tags = {
+        'hr': {
+            openTag: function(params, content) {
+                return '<hr/>';
+            }
+        },
         "b": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-b">';
@@ -705,6 +710,22 @@ var XBBCODE = (function() {
         return text;
     }
 
+    function fixSingleTags(text) {
+        for(var k in tags) {
+            if(!tags[k].closeTag) {
+                text = text.replaceAll(`[${k}]`, tags[k].openTag());
+            }
+        }
+        return text;
+    }
+
+    function securityFixes(text) {
+        return text
+            .replaceAll("'", '&quot;')
+            .replaceAll('"', '&apos;')
+            .replaceAll(';', '&#59;');
+    }
+
     function addBbcodeLevels(text) {
         while ( text !== (text = text.replace(pbbRegExp, function(matchStr, tagName, tagParams, tagContents) {
             matchStr = matchStr.replace(/\[/g, "<");
@@ -747,6 +768,7 @@ var XBBCODE = (function() {
             return "<" + contents + ">";
         });
 
+        config.text = securityFixes(config.text);
         config.text = config.text.replace(/\[/g, "&#91;"); // escape ['s that aren't apart of tags
         config.text = config.text.replace(/\]/g, "&#93;"); // escape ['s that aren't apart of tags
         config.text = config.text.replace(/</g, "["); // escape ['s that aren't apart of tags
@@ -767,6 +789,8 @@ var XBBCODE = (function() {
         errQueue = checkParentChildRestrictions("bbcode", config.text, -1, "", "", config.text);
 
         ret.html = parse(config);
+
+        ret.html = fixSingleTags(ret.html);
 
         if ( ret.html.indexOf("[") !== -1 || ret.html.indexOf("]") !== -1) {
             errQueue.push("Some tags appear to be misaligned.");
