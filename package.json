@@ -1,6 +1,6 @@
 {
   "name": "xbbcode-parser",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Allows you to parse BBCode and to extend the markup to add your own tags.",
   "main": "xbbcode.js",
   "directories": {
