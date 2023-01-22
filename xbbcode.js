@@ -721,8 +721,8 @@ var XBBCODE = (function() {
 
     function securityFixes(text) {
         return text
-            .replaceAll("'", '&quot;')
-            .replaceAll('"', '&apos;')
+            .replaceAll("'", '&#39;')
+            .replaceAll('"', '&quot;')
             .replaceAll(';', '&#59;');
     }
 
