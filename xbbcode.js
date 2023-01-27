@@ -758,6 +758,7 @@ var XBBCODE = (function() {
         var ret = {html: "", error: false},
             errQueue = [];
 
+        config.text = securityFixes(config.text);
         config.text = config.text.replace(/</g, "&lt;"); // escape HTML tag brackets
         config.text = config.text.replace(/>/g, "&gt;"); // escape HTML tag brackets
 
@@ -768,7 +769,6 @@ var XBBCODE = (function() {
             return "<" + contents + ">";
         });
 
-        config.text = securityFixes(config.text);
         config.text = config.text.replace(/\[/g, "&#91;"); // escape ['s that aren't apart of tags
         config.text = config.text.replace(/\]/g, "&#93;"); // escape ['s that aren't apart of tags
         config.text = config.text.replace(/</g, "["); // escape ['s that aren't apart of tags
