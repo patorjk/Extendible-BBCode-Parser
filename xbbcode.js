@@ -224,7 +224,25 @@ var XBBCODE = (function() {
         },
         "img": {
             openTag: function(params,content) {
-
+                params = params?.trim() || "";
+                var cssList = [];
+                
+                if(params) {
+                    // e.g. [img={width}x{height}]{url}[/img]
+                    var execFullSize = /^=\s*(\d+)\s*(x\s*(\d+))?/.exec(params)
+                    if (execFullSize) {
+                        var [width, height] = [execFullSize[1], execFullSize[3]];
+                        cssList.push(`width: ${width}px`, `height: ${height || width}px`);
+                    }
+                    // e.g. [img width={width} height={height}]{url}[/img]
+                    else {
+                        var execWidth = /width\s*=\s*(\d+)/.exec(params);
+                        if (execWidth) cssList.push(`width: ${execWidth[1]}px`);
+                        var execHeight = /height\s*=\s*(\d+)/.exec(params);
+                        if (execHeight) cssList.push(`height: ${execHeight[1]}px`);
+                    }
+                } 
+            
                 var myUrl = content;
 
                 urlPattern.lastIndex = 0;
@@ -232,7 +250,7 @@ var XBBCODE = (function() {
                     myUrl = "";
                 }
 
-                return '<img src="' + myUrl + '" />';
+                return `<img src="${myUrl}" style="${cssList.join(";")}"/>`;
             },
             closeTag: function(params,content) {
                 return '';
