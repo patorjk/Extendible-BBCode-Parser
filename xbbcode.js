@@ -739,9 +739,9 @@ var XBBCODE = (function() {
 
     function securityFixes(text) {
         return text
+            .replaceAll(';', '&#59;')
             .replaceAll("'", '&#39;')
-            .replaceAll('"', '&quot;')
-            .replaceAll(';', '&#59;');
+            .replaceAll('"', '&quot;');
     }
 
     function addBbcodeLevels(text) {
